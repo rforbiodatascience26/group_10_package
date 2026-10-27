@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# cdogmar
+# cdogmar: the central dogma in R
 
 <!-- badges: start -->
 
@@ -10,45 +10,125 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 <!-- badges: end -->
 
-The goal of cdogmar is to …
+GitHub repository:
+<https://github.com/rforbiodatascience26/group_10_package>
+
+Group 10: Luis Galán (s235397), Laura Jensen (s235427), Taniya Dey
+(s263756), Thota Kanishka Rao (s263780)
 
 ## Installation
 
-You can install the development version of cdogmar like so:
+You can install the development version of cdogmar from GitHub with:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+# install.packages("devtools")
+devtools::install_github("rforbiodatascience26/group_10_package")
 ```
 
-## Example
+## About the package
 
-This is a basic example which shows you how to solve a common problem:
+`cdogmar` replicates the central dogma of molecular biology: DNA is
+transcribed into RNA, and RNA is translated into protein. The package
+contains five small functions, one for each step, and a standard codon
+table (`codon_table`) that maps the 64 RNA codons to single-letter amino
+acid codes (stop codons are `_`).
 
 ``` r
 library(cdogmar)
-## basic example code
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+## The functions one by one
+
+`generate_dna()` creates a random DNA sequence of a given length. We set
+a seed so the example is reproducible.
 
 ``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
+set.seed(42)
+dna <- generate_dna(sequence_length = 30)
+dna
+#> [1] "AAAATCTTACGCGCAATCTTGGAAGCAGAA"
 ```
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
+`transcribe_dna()` transcribes DNA into RNA by replacing every thymine
+(T) with uracil (U).
 
-You can also embed plots, for example:
+``` r
+rna <- transcribe_dna(dna)
+rna
+#> [1] "AAAAUCUUACGCGCAAUCUUGGAAGCAGAA"
+```
 
-<img src="man/figures/README-pressure-1.png" alt="" width="100%" />
+`split_codons()` splits a sequence into codons of three nucleotides. The
+`start` argument sets the reading frame, and an incomplete last codon is
+dropped.
 
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+``` r
+codons <- split_codons(rna, start = 1)
+codons
+#>  [1] "AAA" "AUC" "UUA" "CGC" "GCA" "AUC" "UUG" "GAA" "GCA" "GAA"
+```
+
+`codons_to_amino_acids()` translates the codons into a protein sequence
+using `codon_table`.
+
+``` r
+protein <- codons_to_amino_acids(codons)
+protein
+#> [1] "KILRAILEAE"
+```
+
+`plot_amino_acid_counts()` counts how often each amino acid occurs and
+returns a ggplot bar chart.
+
+``` r
+plot_amino_acid_counts(protein)
+```
+
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+
+## All functions together
+
+Because each function’s output is the next function’s input, the whole
+central dogma can be written as one pipeline:
+
+``` r
+set.seed(42)
+generate_dna(sequence_length = 300) |>
+  transcribe_dna() |>
+  split_codons() |>
+  codons_to_amino_acids() |>
+  plot_amino_acid_counts()
+```
+
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+
+## Use cases and possible extensions
+
+`cdogmar` is mainly a teaching tool: it shows each step of gene
+expression in a few lines of code, and the random sequences make it easy
+to explore how codon usage shapes amino acid frequencies. Useful extra
+functions could be: finding the start codon (AUG) and translating only
+the open reading frame up to the first stop codon, making the reverse
+complement of a DNA strand, calculating GC content, translating all
+three reading frames and reading real sequences from FASTA files.
+
+## Group discussion
+
+**Dependencies.** `plot_amino_acid_counts()` needs `ggplot2` for
+plotting and `stringr` for splitting and counting characters. They are
+added as dependencies by listing them under `Imports` in the
+`DESCRIPTION` file (which is what `usethis::use_package()` does), so
+they are installed together with `cdogmar`.
+
+**Why limit dependencies?** Every dependency must be installed by the
+user, makes installation slower, and can break our package if it changes
+or is removed. Dependencies cannot always be avoided: rewriting a
+plotting system like `ggplot2` ourselves would be much more work and
+much more error-prone than relying on a well-tested package.
+
+**`@importFrom` vs `package::function()`.** An
+`@importFrom stringr str_count` tag adds the function to the package’s
+`NAMESPACE`, so it can be called as `str_count()` without a prefix.
+Writing `stringr::str_count()` instead shows exactly where each function
+comes from and avoids name clashes. In both cases the package must still
+be listed under `Imports`.

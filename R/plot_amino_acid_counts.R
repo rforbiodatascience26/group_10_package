@@ -28,7 +28,7 @@ plot_amino_acid_counts <- function(sequence){
   counts[["Sequence"]] <- rownames(counts)
 
   plot <- counts |>
-    ggplot2::ggplot(ggplot2::aes(x = sequence, y = Counts, fill = sequence)) +
+    ggplot2::ggplot(ggplot2::aes(x = Sequence, y = Counts, fill = Sequence)) +
     ggplot2::geom_col() +
     ggplot2::theme_bw() +
     ggplot2::theme(legend.position = "none")

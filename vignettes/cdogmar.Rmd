@@ -1,6 +1,7 @@
 ---
-title: "cdogmar"
-output: rmarkdown::html_vignette
+title: "cdogmar: the central dogma in R"
+output: rmarkdown::pdf_document
+geometry: margin=2cm
 vignette: >
   %\VignetteIndexEntry{cdogmar}
   %\VignetteEngine{knitr::rmarkdown}
@@ -10,10 +11,82 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 6,
+  fig.height = 1.8
 )
 ```
+
+GitHub repository: <https://github.com/rforbiodatascience26/group_10_package>
+
+Group 10: Luis Galán (s235397), Laura Jensen (s235427), Taniya Dey (s263756), Thota Kanishka Rao (s263780)
+
+## About the package
+
+`cdogmar` replicates the central dogma of molecular biology: DNA is transcribed into RNA, and RNA is translated into protein. The package contains five small functions, one for each step, and a standard codon table (`codon_table`) that maps the 64 RNA codons to single-letter amino acid codes (stop codons are `_`).
 
 ```{r setup}
 library(cdogmar)
 ```
+
+## The functions one by one
+
+`generate_dna()` creates a random DNA sequence of a given length. We set a seed so the example is reproducible.
+
+```{r}
+set.seed(42)
+dna <- generate_dna(sequence_length = 30)
+dna
+```
+
+`transcribe_dna()` transcribes DNA into RNA by replacing every thymine (T) with uracil (U).
+
+```{r}
+rna <- transcribe_dna(dna)
+rna
+```
+
+`split_codons()` splits a sequence into codons of three nucleotides. The `start` argument sets the reading frame, and an incomplete last codon is dropped.
+
+```{r}
+codons <- split_codons(rna, start = 1)
+codons
+```
+
+`codons_to_amino_acids()` translates the codons into a protein sequence using `codon_table`.
+
+```{r}
+protein <- codons_to_amino_acids(codons)
+protein
+```
+
+`plot_amino_acid_counts()` counts how often each amino acid occurs and returns a ggplot bar chart.
+
+```{r}
+plot_amino_acid_counts(protein)
+```
+
+## All functions together
+
+Because each function's output is the next function's input, the whole central dogma can be written as one pipeline:
+
+```{r}
+set.seed(42)
+generate_dna(sequence_length = 300) |>
+  transcribe_dna() |>
+  split_codons() |>
+  codons_to_amino_acids() |>
+  plot_amino_acid_counts()
+```
+
+## Use cases and possible extensions
+
+`cdogmar` is mainly a teaching tool: it shows each step of gene expression in a few lines of code, and the random sequences make it easy to explore how codon usage shapes amino acid frequencies. Useful extra functions could be: finding the start codon (AUG) and translating only the open reading frame up to the first stop codon, making the reverse complement of a DNA strand, calculating GC content, translating all three reading frames and reading real sequences from FASTA files.
+
+## Group discussion
+
+**Dependencies.** `plot_amino_acid_counts()` needs `ggplot2` for plotting and `stringr` for splitting and counting characters. They are added as dependencies by listing them under `Imports` in the `DESCRIPTION` file (which is what `usethis::use_package()` does), so they are installed together with `cdogmar`.
+
+**Why limit dependencies?** Every dependency must be installed by the user, makes installation slower, and can break our package if it changes or is removed. Dependencies cannot always be avoided: rewriting a plotting system like `ggplot2` ourselves would be much more work and much more error-prone than relying on a well-tested package.
+
+**`@importFrom` vs `package::function()`.** An `@importFrom stringr str_count` tag adds the function to the package's `NAMESPACE`, so it can be called as `str_count()` without a prefix. Writing `stringr::str_count()` instead shows exactly where each function comes from and avoids name clashes. In both cases the package must still be listed under `Imports`.
