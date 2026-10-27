@@ -1,0 +1,30 @@
+Package: cdogmar
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Luis", "Galán",
+      email = "s235397@dtu.dk",
+      role = c("aut", "cre")
+    ),
+    person(
+      "Laura", "Jensen",
+      email = "s235427@dtu.dk",
+      role = c("aut")
+    ),
+    person(
+      "Taniya", "Dey",
+      email = "s263756@dtu.dk",
+      role = c("aut")
+    ),
+    person(
+      "Thota", "Rao",
+      email = "s263780@dtu.dk",
+      role = c("aut")
+    )
+  )
+Description: This package replicates the central dogma in R.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
