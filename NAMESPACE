@@ -3,3 +3,11 @@
 export(generate_dna)
 export(split_codons)
 export(transcribe_dna)
+export(codons_to_amino_acids)
+export(plot_amino_acid_counts)
+import(ggplot2)
+importFrom(stringr,
+  boundary,
+  str_count,
+  str_split
+)
